@@ -195,16 +195,18 @@
         <!-- color palette example-->
         <div class="colorpalette">
           <div class="text">
-            <button class="btn small" id="changepalette" style="width: 100%; margin-bottom: 10px;">Chọn bảng màu</button>
+            <button class="btn small" id="changepalette" style="width: 100%; margin-bottom: 15px;">Chọn bảng
+              màu</button>
             <select name="paletteselector" id="paletteselector"></select>
 
-            <div style="display: flex; gap: 8px; margin-top: 15px;">
+            <div style="display: flex; gap: 8px; margin-top: 15px; align-items: center;">
               <input type="text" id="renamepalettetext" placeholder="Tên bảng màu"
-                style="flex: 1; padding: 8px 10px; border-radius: 4px; border: 1px solid #1a2c2e; background: rgba(255,255,255,0.1); color: #eee; outline: none; font-size: 13px; box-sizing: border-box;">
-              <button class="btn small" id="renamepalettebtn" style="flex-shrink: 0; padding: 8px 15px; margin: 0; white-space: nowrap;">Đổi tên</button>
+                style="flex: 1; padding: 0 10px; height: 32px; border-radius: 4px; border: 1px solid #1a2c2e; background: rgba(255,255,255,0.1); color: #eee; outline: none; font-size: 13px; box-sizing: border-box;">
+              <button id="renamepalettebtn"
+                style="flex-shrink: 0; padding: 0 15px; height: 32px; margin: 0; white-space: nowrap; border: none; border-radius: 4px; background: #dfb213; color: #fff; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 13px;">Đổi tên</button>
             </div>
-            <button class="btn small" id="deletepalettebtn"
-              style="width: 100%; margin-top: 8px; background-color: #a83232;">Xóa bảng màu này</button>
+            <button id="deletepalettebtn"
+              style="width: 100%; margin-top: 10px; padding: 8px; border-radius: 4px; border: none; background-color: #a83232; color: #fff; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 13px;">Xóa bảng màu này</button>
           </div>
           <div class="icons" id="palettecolor">
           </div>
@@ -212,8 +214,8 @@
         <div class="infoselects">
           <h3 style="margin-top: 15px; font-size: 1.2rem;">Tải bảng màu lên</h3>
           <!--upload palette -->
-          <label id="uploadpalettelabel" for="uploadpalettefile" style="width: 100%;">Tải bảng màu lên <input
-              type="file" class="inputbtn" id="uploadpalettefile" accepts=".hex, .txt" style="width: 100%;"></label>
+          <label id="uploadpalettelabel" for="uploadpalettefile" style="width: 100%; margin-top: 10px;"><input type="file"
+              id="uploadpalettefile" accepts=".hex, .txt" style="width: 100%; color: #ccc; font-size: 14px; cursor: pointer;"></label>
         </div>
         <!-- custom palette -->
         <div class="infoselects">
@@ -232,10 +234,11 @@
           </div>
           <div id="currentpallete" class="colorpalette" style="min-height: 25px; margin-bottom: 15px;"> </div>
           <input type="text" id="custompalettename" placeholder="Tên bảng màu (Không bắt buộc)"
-            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #1a2c2e; background: rgba(255,255,255,0.1); color: #eee; outline: none; box-sizing: border-box; margin-bottom: 10px;">
-          <button class="btn small" id="savecustompalette" style="width: 100%; margin-bottom: 10px;">Lưu bảng
+            style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #1a2c2e; background: rgba(255,255,255,0.1); color: #eee; outline: none; box-sizing: border-box; margin-bottom: 15px;">
+          <button class="btn small" id="savecustompalette" style="width: 100%; margin-bottom: 15px;">Lưu bảng
             màu</button>
-          <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">Sau khi lưu, tải lại trang để xem bảng màu được thêm.</p>
+          <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 5px;">Sau khi lưu, tải lại trang để xem bảng màu
+            được thêm.</p>
         </div>
         <div class="dothings" style="margin-top: 25px;">
           <!-- download image -->
