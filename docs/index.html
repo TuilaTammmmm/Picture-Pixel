@@ -195,8 +195,14 @@
         <!-- color palette example-->
         <div class="colorpalette">
           <div class="text">
-            <button class="btn small" id="changepalette" style="width: 100%;">Chọn bảng màu</button>
+            <button class="btn small" id="changepalette" style="width: 100%; margin-bottom: 5px;">Chọn bảng màu</button>
             <select name="paletteselector" id="paletteselector"></select>
+            
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+              <input type="text" id="renamepalettetext" placeholder="Tên bảng màu" style="flex: 1; padding: 5px; border-radius: 3px; border: 1px solid #1a2c2e; background: rgba(255,255,255,0.1); color: #eee; outline: none; font-size: 13px;">
+              <button class="btn small" id="renamepalettebtn" style="flex-shrink: 0; padding: 5px 10px;">Đổi tên</button>
+            </div>
+            <button class="btn small" id="deletepalettebtn" style="width: 100%; margin-top: 5px; background-color: #a83232;">Xóa bảng màu này</button>
           </div>
           <div class="icons" id="palettecolor">
           </div>
@@ -229,10 +235,9 @@
             màu</button>
           <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 15px;">Sau khi lưu, tải lại (refresh) trang để xem
             bảng màu được thêm.</p>
-          <button class="btn small" id="clearcustompalettes" style="width: 100%; margin-bottom: 10px;">Xóa bảng màu tùy
-            chỉnh</button>
-          <p style="font-size: 0.85rem; color: #ccc;">Xóa tất cả bảng màu tùy chỉnh (không thể khôi phục). Tải lại trang
-            để xem thay đổi.</p>
+          <p style="font-size: 0.85rem; color: #ccc; margin-bottom: 15px;">Sau khi lưu, bảng màu sẽ xuất hiện ở danh sách phía trên.</p>
+          <button class="btn small" id="restoredefaultpalettes" style="width: 100%; margin-bottom: 10px;">Khôi phục bảng màu gốc</button>
+          <p style="font-size: 0.85rem; color: #ccc;">Xóa tất cả thay đổi và khôi phục lại các bảng màu mặc định ban đầu.</p>
         </div>
         <div class="dothings" style="margin-top: 25px;">
           <!-- download image -->

@@ -143,24 +143,32 @@ let currentPalette = 0;
 
 
 //*** add palette to custom list
-const addPalette = (palette=[]) => {
-  let data = JSON.parse(localStorage.getItem("customPalettes"));
-  if (data == null) data = [];
-  data.push(palette);
-  localStorage.setItem("customPalettes", JSON.stringify(data));
+const addPalette = (paletteObj) => {
+  let data = JSON.parse(localStorage.getItem("appPalettes"));
+  if (data == null) data = pullFromLocalStorage();
+  data.push(paletteObj);
+  localStorage.setItem("appPalettes", JSON.stringify(data));
 };
 
 //*** update from localstorage
 const pullFromLocalStorage = () => {
-  //*** cards
-  let data = JSON.parse(localStorage.getItem("customPalettes"));
-  if (data == null) data = [];
-  return data.map((item, index) => {
-    if (Array.isArray(item)) {
-      return { name: `Bảng màu tự tạo ${index + 1}`, colors: item };
-    }
-    return item;
-  });
+  let data = JSON.parse(localStorage.getItem("appPalettes"));
+  if (data == null) {
+    const oldCustom = JSON.parse(localStorage.getItem("customPalettes")) || [];
+    data = paletteList.map((colors, i) => ({
+      name: `Bảng màu gốc ${i + 1}`,
+      colors: colors
+    }));
+    oldCustom.forEach((item, index) => {
+      if (Array.isArray(item)) {
+        data.push({ name: `Bảng màu tự tạo ${index + 1}`, colors: item });
+      } else {
+        data.push(item);
+      }
+    });
+    localStorage.setItem("appPalettes", JSON.stringify(data));
+  }
+  return data;
 };
 //*** convert rgb color to int array */
 const rgbToInt = (rgb) => {
@@ -364,12 +372,60 @@ document.addEventListener("DOMContentLoaded", function () {
       currentPalette.removeChild(currentPalette.firstChild);
     }
     if (nameInput) nameInput.value = '';
+    makePaletteGradient();
+    if (slimSelectInstance) slimSelectInstance.set(paletteList.length - 1);
   });
-  //clear custom palettes
-  const clearPalette = document.getElementById('clearcustompalettes');
-  clearPalette.addEventListener('click', () => {
-    localStorage.setItem("customPalettes", JSON.stringify([]));
-  });
+  
+  // Rename palette
+  const renamePaletteBtn = document.getElementById('renamepalettebtn');
+  if (renamePaletteBtn) {
+    renamePaletteBtn.addEventListener('click', () => {
+      const newName = document.getElementById('renamepalettetext').value.trim();
+      if (!newName) return;
+      let data = pullFromLocalStorage();
+      if (data[currentPalette]) {
+        if (!data[currentPalette].colors) {
+           data[currentPalette] = { name: newName, colors: data[currentPalette] };
+        } else {
+           data[currentPalette].name = newName;
+        }
+        localStorage.setItem("appPalettes", JSON.stringify(data));
+        makePaletteGradient();
+        if (slimSelectInstance) slimSelectInstance.set(currentPalette);
+      }
+    });
+  }
+
+  // Delete specific palette
+  const deletePaletteBtn = document.getElementById('deletepalettebtn');
+  if (deletePaletteBtn) {
+    deletePaletteBtn.addEventListener('click', () => {
+      let data = pullFromLocalStorage();
+      if (data.length === 0) return;
+      const pName = data[currentPalette].name || `Bảng màu ${parseInt(currentPalette) + 1}`;
+      if (confirm(`Bạn có chắc muốn xóa vĩnh viễn [${pName}] không?`)) {
+        data.splice(currentPalette, 1);
+        localStorage.setItem("appPalettes", JSON.stringify(data));
+        currentPalette = 0; // reset to 0
+        makePaletteGradient();
+        if (slimSelectInstance) slimSelectInstance.set(currentPalette);
+        pixelit();
+      }
+    });
+  }
+
+  // Restore default palettes
+  const restoreDefaultBtn = document.getElementById('restoredefaultpalettes');
+  if (restoreDefaultBtn) {
+    restoreDefaultBtn.addEventListener('click', () => {
+      if (confirm("Khôi phục sẽ xóa toàn bộ thay đổi của bạn và đưa bảng màu về trạng thái gốc. Bạn có chắc không?")) {
+        localStorage.removeItem("appPalettes");
+        currentPalette = 0;
+        makePaletteGradient();
+        pixelit();
+      }
+    });
+  }
 
 
   //function to apply effects
@@ -430,13 +486,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+  let slimSelectInstance = null;
+
   const makePaletteGradient = () => {
-    //create palette
-    let pdivs = "";
     //create palette of colors
-    document.querySelector("#palettecolor").innerHTML = "";
-    const customPallete = pullFromLocalStorage();
-    paletteList = [ ...paletteList,...customPallete];
+    document.querySelector("#paletteselector").innerHTML = "";
+    paletteList = pullFromLocalStorage();
+    
     paletteList.forEach((palette, i) => {
       const option = document.createElement("option");
       option.value = i;
@@ -445,12 +501,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const pColors = isObject ? palette.colors : palette;
       const pName = isObject ? palette.name : `Bảng màu ${i + 1}`;
       
-      let htmlStr = `<div style="display: flex; flex-direction: column; padding: 4px 0;">`;
-      htmlStr += `<span style="font-size: 12px; font-weight: 600; margin-bottom: 4px; line-height: 1;">${pName}</span>`;
-      htmlStr += `<div style="display: flex; flex-wrap: wrap;">`;
+      let htmlStr = `<div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">`;
+      htmlStr += `<span style="font-size: 13px; font-weight: 600; margin-right: 10px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 140px;">${pName}</span>`;
+      htmlStr += `<div style="display: flex; flex-wrap: wrap; gap: 2px;">`;
 
       pColors.forEach((elem) => {
-        htmlStr += `<div class="colorblock" style="background-color: rgba(${elem[0]},${elem[1]},${elem[2]},1)"></div>`;
+        htmlStr += `<div class="colorblock" style="background-color: rgba(${elem[0]},${elem[1]},${elem[2]},1); width: 15px; height: 15px; border-radius: 2px;"></div>`;
       });
       htmlStr += `</div></div>`;
       
@@ -458,22 +514,37 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("paletteselector").appendChild(option);
     });
 
-    //document.querySelector('#palettecolor').innerHTML = pdivs;
+    if (slimSelectInstance) {
+      slimSelectInstance.destroy();
+    }
+    
+    slimSelectInstance = new SlimSelect({
+      hideSelectedOption: true,
+      showSearch: false,
+      select: "#paletteselector",
+      onChange: (info) => {
+        currentPalette = info.value;
+        const renameInput = document.getElementById("renamepalettetext");
+        if (renameInput && paletteList[currentPalette]) {
+           const p = paletteList[currentPalette];
+           renameInput.value = p.name || `Bảng màu ${parseInt(currentPalette) + 1}`;
+        }
+        palette.checked = true;
+        pixelit();
+      },
+    });
+    
+    // Set initial rename input value
+    if (paletteList.length > 0) {
+        const renameInput = document.getElementById("renamepalettetext");
+        if (renameInput) {
+           const p = paletteList[currentPalette];
+           if (p) renameInput.value = p.name || `Bảng màu ${parseInt(currentPalette) + 1}`;
+        }
+    }
   };
 
   makePaletteGradient();
-  //special select
-  new SlimSelect({
-    hideSelectedOption: true,
-    showSearch: false,
-    select: "#paletteselector",
-    onChange: (info) => {
-      currentPalette = info.value;
-      palette.checked = true;
-      pixelit();
-      //console.log(info)
-    },
-  });
 
   //block size
   const blocksize = document.querySelector("#blocksize");
