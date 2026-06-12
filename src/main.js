@@ -155,7 +155,12 @@ const pullFromLocalStorage = () => {
   //*** cards
   let data = JSON.parse(localStorage.getItem("customPalettes"));
   if (data == null) data = [];
-  return data;
+  return data.map((item, index) => {
+    if (Array.isArray(item)) {
+      return { name: `Bảng màu tự tạo ${index + 1}`, colors: item };
+    }
+    return item;
+  });
 };
 //*** convert rgb color to int array */
 const rgbToInt = (rgb) => {
@@ -332,22 +337,33 @@ document.addEventListener("DOMContentLoaded", function () {
   //save custom palette
   const savePalette = document.getElementById('savecustompalette');
   savePalette.addEventListener('click', () => {
-    let palette = [];
+    let colorsList = [];
     let colors = document.querySelectorAll('#currentpallete .colorblock');
     colors.forEach((color) => {
-      palette.push(color.dataset.color);
+      colorsList.push(color.dataset.color);
     });
-    //console.log(palette);
+    
+    if (colorsList.length === 0) {
+      alert("Vui lòng thêm ít nhất một màu vào bảng màu trước khi lưu.");
+      return;
+    }
+
     //remove duplicates and make array of string
-    palette = removeDuplicates(palette).map((color) => {
+    colorsList = removeDuplicates(colorsList).map((color) => {
       return color.split(',');
     });
-    addPalette(palette);
+    
+    let nameInput = document.getElementById('custompalettename');
+    let paletteName = nameInput && nameInput.value.trim() ? nameInput.value.trim() : "Bảng màu tự tạo";
+    
+    addPalette({ name: paletteName, colors: colorsList });
+
     //remove all children from element
     const currentPalette = document.getElementById('currentpallete');
     while (currentPalette.firstChild) {
       currentPalette.removeChild(currentPalette.firstChild);
     }
+    if (nameInput) nameInput.value = '';
   });
   //clear custom palettes
   const clearPalette = document.getElementById('clearcustompalettes');
@@ -371,7 +387,11 @@ document.addEventListener("DOMContentLoaded", function () {
       px.setPixelSize(pixelblock.value);
     }
 
-    px.setPalette(paletteList[currentPalette])
+    let selectedPalette = paletteList[currentPalette];
+    if (selectedPalette && selectedPalette.colors) {
+      selectedPalette = selectedPalette.colors;
+    }
+    px.setPalette(selectedPalette)
       .draw()
       .pixelate();
 
@@ -420,14 +440,24 @@ document.addEventListener("DOMContentLoaded", function () {
     paletteList.forEach((palette, i) => {
       const option = document.createElement("option");
       option.value = i;
-      palette.forEach((elem) => {
+      
+      const isObject = !Array.isArray(palette) && palette.colors;
+      const pColors = isObject ? palette.colors : palette;
+      const pName = isObject ? palette.name : `Bảng màu ${i + 1}`;
+      
+      let htmlStr = `<div style="display:flex; align-items:center;"><span style="margin-right: 10px; font-size: 13px; width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pName}</span><div style="display:flex;">`;
+
+      pColors.forEach((elem) => {
         let div = document.createElement("div");
         div.classList = "colorblock";
         div.style.backgroundColor = `rgba(${elem[0]},${elem[1]},${elem[2]},1)`;
-        //div.innerHTML = `<div class="colorblock" style="background-color: rgba(${elem[0]},${elem[1]},${elem[2]},1)"></div>`;
         option.appendChild(div);
-        //pdivs += `<div class="colorblock" style="background-color: rgba(${elem[0]},${elem[1]},${elem[2]},1)"></div>`;
+        
+        htmlStr += `<div class="colorblock" style="background-color: rgba(${elem[0]},${elem[1]},${elem[2]},1)"></div>`;
       });
+      htmlStr += `</div></div>`;
+      option.setAttribute('data-html', htmlStr);
+      option.text = pName;
       document.getElementById("paletteselector").appendChild(option);
     });
 
