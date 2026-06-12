@@ -179,6 +179,7 @@ return unique_array;
 document.addEventListener("DOMContentLoaded", function () {
   //load image to canvas
   document.getElementById("pixlInput").onchange = function (e) {
+    if (!this.files || !this.files[0]) return;
     var img = new Image();
     img.src = URL.createObjectURL(this.files[0]);
     img.onload = () => {
@@ -193,6 +194,23 @@ document.addEventListener("DOMContentLoaded", function () {
       //console.log(px.getPalette());
     };
   };
+
+  // paste image from clipboard
+  document.addEventListener("paste", function (e) {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (let index in items) {
+      const item = items[index];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const blob = item.getAsFile();
+        const img = new Image();
+        img.src = URL.createObjectURL(blob);
+        img.onload = () => {
+          px.setFromImgSource(img.src);
+          pixelit();
+        };
+      }
+    }
+  });
 
   //load color to palette
   const fileInput = document.getElementById('uploadpalettefile');
