@@ -445,19 +445,16 @@ document.addEventListener("DOMContentLoaded", function () {
       const pColors = isObject ? palette.colors : palette;
       const pName = isObject ? palette.name : `Bảng màu ${i + 1}`;
       
-      let htmlStr = `<div style="display:flex; align-items:center;"><span style="margin-right: 10px; font-size: 13px; width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pName}</span><div style="display:flex;">`;
+      let htmlStr = `<div style="display: flex; flex-direction: column; padding: 4px 0;">`;
+      htmlStr += `<span style="font-size: 12px; font-weight: 600; margin-bottom: 4px; line-height: 1;">${pName}</span>`;
+      htmlStr += `<div style="display: flex; flex-wrap: wrap;">`;
 
       pColors.forEach((elem) => {
-        let div = document.createElement("div");
-        div.classList = "colorblock";
-        div.style.backgroundColor = `rgba(${elem[0]},${elem[1]},${elem[2]},1)`;
-        option.appendChild(div);
-        
         htmlStr += `<div class="colorblock" style="background-color: rgba(${elem[0]},${elem[1]},${elem[2]},1)"></div>`;
       });
       htmlStr += `</div></div>`;
-      option.setAttribute('data-html', htmlStr);
-      option.text = pName;
+      
+      option.innerHTML = htmlStr;
       document.getElementById("paletteselector").appendChild(option);
     });
 
