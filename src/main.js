@@ -414,20 +414,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Restore default palettes
-  const restoreDefaultBtn = document.getElementById('restoredefaultpalettes');
-  if (restoreDefaultBtn) {
-    restoreDefaultBtn.addEventListener('click', () => {
-      if (confirm("Khôi phục sẽ xóa toàn bộ thay đổi của bạn và đưa bảng màu về trạng thái gốc. Bạn có chắc không?")) {
-        localStorage.removeItem("appPalettes");
-        currentPalette = 0;
-        makePaletteGradient();
-        pixelit();
-      }
-    });
-  }
-
-
   //function to apply effects
   const pixelit = () => {
     document.querySelector(".loader").classList.toggle("active");
