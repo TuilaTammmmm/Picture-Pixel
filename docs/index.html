@@ -8,6 +8,107 @@
  <link rel="stylesheet" href="assets/style.min.css?v1.1">
  <link rel="stylesheet" href="assets/slim.select.css">
  <title>Pixel It - Create pixel art from an image</title>
+ <style>
+    /* Modal Background */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    /* Modal Box */
+    .modal-box {
+      background: #21383a;
+      border: 1px solid #1a2c2e;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* Modal Header */
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid #1a2c2e;
+    }
+    .modal-title {
+      color: #eee;
+      margin: 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .modal-close {
+      color: #eee;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .modal-close:hover {
+      color: #dfb213;
+    }
+    /* Tabs */
+    .modal-tabs {
+      display: flex;
+      border-bottom: 1px solid #1a2c2e;
+    }
+    .modal-tab {
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 14px;
+      background: transparent;
+      border: none;
+      outline: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .modal-tab:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .modal-tab.active {
+      color: #dfb213;
+      border-bottom: 2px solid #dfb213;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    /* Tab Content */
+    .tab-content {
+      display: none;
+      padding: 20px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    /* Paste Area */
+    .paste-area {
+      border: 2px dashed #1a2c2e;
+      border-radius: 6px;
+      padding: 40px 20px;
+      text-align: center;
+      color: #aaa;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      outline: none;
+    }
+    .paste-area:focus, .paste-area:hover {
+      border-color: #dfb213;
+      background: rgba(255, 255, 255, 0.02);
+      color: #eee;
+    }
+ </style>
 </head>
 <body style="margin: 0; padding: 0; overflow: hidden; height: 100vh; background-color: #21383a;">
 
@@ -16,7 +117,7 @@
     <div class="selectors" style="display: flex; flex-direction: column; gap: 15px; align-items: stretch;">
       <!--upload image -->
       <span id="uploadspan" style="width: 100%; display: flex; flex-direction: column;">
-        <label id="uploadimage" for="pixlInput" style="width: 100%;">Tải ảnh lên / Dán (Ctrl+V)<input type="file" class="inputbtn" id="pixlInput" style="width: 100%;"></label>
+        <button type="button" class="inputbtn" id="openUploadModalBtn" style="width: 100%; cursor: pointer;">Tải ảnh / Dán ảnh mới</button>
         <span id="image_dimensions" style="font-size: 14px; margin-top: 5px; color: #eee; font-weight: normal; text-transform: none; white-space: nowrap;"></span>
       </span>
       <!-- block size controls -->
@@ -99,6 +200,29 @@
     <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
   </div>
 
- </body>
-
+ <div class="modal-overlay" id="uploadModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 class="modal-title">Chọn ảnh đầu vào</h3>
+      <span class="modal-close" id="closeUploadModal">&times;</span>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="tab-paste">Dán vào</button>
+      <button class="modal-tab" data-tab="tab-upload">Tải lên</button>
+    </div>
+    <div class="tab-content active" id="tab-paste">
+      <div class="paste-area" id="pasteArea" tabindex="0">
+        <p style="margin: 0; font-size: 15px;">Bấm vào đây và nhấn <strong>Ctrl + V</strong></p>
+        <p style="margin: 10px 0 0 0; font-size: 12px; opacity: 0.7;">để dán ảnh từ bộ nhớ tạm</p>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-upload">
+      <label id="uploadimage" for="pixlInput" style="width: 100%; text-align: center; display: block; margin: 0; color: #eee;">
+        Chọn tệp từ máy tính
+        <input type="file" class="inputbtn" id="pixlInput" style="width: 100%; margin-top: 15px;">
+      </label>
+    </div>
+  </div>
+</div>
+</body>
 </html>
