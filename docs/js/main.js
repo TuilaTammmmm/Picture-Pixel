@@ -285,14 +285,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //add color to palette
   const addColor = document.getElementById('addcustomcolor');
+  const customColorInput = document.getElementById('customcolor');
+  const colorInputText = document.getElementById('colorinputtext');
+  
+  if (customColorInput && colorInputText) {
+    customColorInput.addEventListener('input', (e) => {
+      colorInputText.value = e.target.value;
+    });
+  }
+
   addColor.addEventListener('click', () => {
-    let color = document.getElementById('customcolor').value;
-    const colorSpan = document.createElement('span');
-    colorSpan.style.backgroundColor = color;
-    colorSpan.dataset.color = rgbToInt(color).join(',');
-    colorSpan.classList.add('colorblock');
-    //console.log(colorSpan);
-    document.getElementById('currentpallete').appendChild(colorSpan);
+    let inputText = colorInputText ? colorInputText.value.trim() : '';
+    if (!inputText) {
+      inputText = customColorInput ? customColorInput.value : '';
+    }
+
+    // Split by comma or space if multiple colors are provided
+    const colors = inputText.split(/[,]+/).map(c => c.trim()).filter(c => c);
+    
+    colors.forEach(colorStr => {
+      // Create a temporary element to let the browser parse the color string
+      const tempDiv = document.createElement('div');
+      tempDiv.style.color = colorStr;
+      document.body.appendChild(tempDiv);
+      const computedColor = window.getComputedStyle(tempDiv).color; // rgb(...) or rgba(...)
+      document.body.removeChild(tempDiv);
+
+      if (computedColor && computedColor !== 'rgba(0, 0, 0, 0)') { // ignore invalid parsing
+        const rgbMatch = computedColor.match(/\d+/g);
+        if (rgbMatch && rgbMatch.length >= 3) {
+          const r = parseInt(rgbMatch[0]);
+          const g = parseInt(rgbMatch[1]);
+          const b = parseInt(rgbMatch[2]);
+          
+          const colorSpan = document.createElement('span');
+          colorSpan.style.backgroundColor = computedColor;
+          colorSpan.dataset.color = `${r},${g},${b}`;
+          colorSpan.classList.add('colorblock');
+          document.getElementById('currentpallete').appendChild(colorSpan);
+        }
+      }
+    });
+
+    if (colorInputText) colorInputText.value = '';
   });
   //save custom palette
   const savePalette = document.getElementById('savecustompalette');

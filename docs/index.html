@@ -169,9 +169,13 @@
      <div class="infoselects">
       <h3 style="margin-top: 25px; font-size: 1.2rem;">Bảng màu thủ công</h3>
       <p style="margin-bottom: 10px; font-size: 0.9rem;">Nhấp vào màu để thay đổi</p>
-      <div class="custompalette" id="custompalette" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-        <input type="color" name="customcolor" id="customcolor" style="flex-shrink: 0;">
-        <button class="btn small" id="addcustomcolor" style="flex: 1;">Thêm màu</button>
+      <div class="custompalette" id="custompalette" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <input type="color" name="customcolor" id="customcolor" style="flex-shrink: 0; height: 35px; width: 40px; border: none; padding: 0; background: none; cursor: pointer;" title="Chọn màu bằng bộ chọn">
+          <input type="text" id="colorinputtext" placeholder="Nhập mã màu (VD: #fff, rgb(0,0,0))" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #1a2c2e; background: rgba(255,255,255,0.1); color: #eee; outline: none;">
+        </div>
+        <button class="btn small" id="addcustomcolor" style="width: 100%;">Thêm màu</button>
+        <p style="font-size: 0.85rem; color: #ccc; margin: 0;">Hỗ trợ dán nhiều màu cách nhau bằng dấu phẩy.</p>
       </div>
       <div id="currentpallete" class="colorpalette" style="min-height: 25px; margin-bottom: 15px;"> </div>
       <button class="btn small" id="savecustompalette" style="width: 100%; margin-bottom: 10px;">Lưu bảng màu</button>
