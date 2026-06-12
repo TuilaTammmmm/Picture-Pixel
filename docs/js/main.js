@@ -177,22 +177,74 @@ return unique_array;
 
 
 document.addEventListener("DOMContentLoaded", function () {
-  //load image to canvas
+  // Modal logic
+  const uploadModal = document.getElementById("uploadModal");
+  const openUploadModalBtn = document.getElementById("openUploadModalBtn");
+  const closeUploadModal = document.getElementById("closeUploadModal");
+  const modalTabs = document.querySelectorAll(".modal-tab");
+  const tabContents = document.querySelectorAll(".tab-content");
+  const pasteArea = document.getElementById("pasteArea");
+
+  const openModal = () => {
+    uploadModal.classList.add("active");
+    switchTab("tab-paste");
+  };
+
+  const closeModal = () => {
+    uploadModal.classList.remove("active");
+  };
+
+  const switchTab = (tabId) => {
+    modalTabs.forEach(t => t.classList.remove("active"));
+    tabContents.forEach(c => c.classList.remove("active"));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
+    document.getElementById(tabId).classList.add("active");
+    if (tabId === "tab-paste") {
+      setTimeout(() => pasteArea.focus(), 50);
+    }
+  };
+
+  if (openUploadModalBtn) openUploadModalBtn.addEventListener("click", openModal);
+  if (closeUploadModal) closeUploadModal.addEventListener("click", closeModal);
+  if (uploadModal) {
+    uploadModal.addEventListener("click", (e) => {
+      if (e.target === uploadModal) closeModal();
+    });
+  }
+
+  modalTabs.forEach(tab => {
+    tab.addEventListener("click", () => switchTab(tab.getAttribute("data-tab")));
+  });
+
+  // load image to canvas from file input
   document.getElementById("pixlInput").onchange = function (e) {
+    if (!this.files || !this.files[0]) return;
     var img = new Image();
     img.src = URL.createObjectURL(this.files[0]);
     img.onload = () => {
-      //create element
-      //document.getElementById('teste').src = img.src;
       px.setFromImgSource(img.src);
       pixelit();
-      //.pixelate()
-      //.convertGrayscale()
-      //.convertPalette();
-      //.saveImage();
-      //console.log(px.getPalette());
+      closeModal();
     };
   };
+
+  // paste image from clipboard ONLY in the pasteArea
+  pasteArea.addEventListener("paste", function (e) {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (let index in items) {
+      const item = items[index];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const blob = item.getAsFile();
+        const img = new Image();
+        img.src = URL.createObjectURL(blob);
+        img.onload = () => {
+          px.setFromImgSource(img.src);
+          pixelit();
+          closeModal();
+        };
+      }
+    }
+  });
 
   //load color to palette
   const fileInput = document.getElementById('uploadpalettefile');
