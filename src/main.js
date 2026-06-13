@@ -749,8 +749,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const finalPrompt = fullPrompt + `\n(Ghi chú cho AI: Độ phân giải pixel sẽ được phần mềm thu về giới hạn tối đa tỉ lệ ${w}x${h}, nên xin hãy vẽ các mảng màu/chi tiết lớn, tránh vỡ nét).`;
 
       navigator.clipboard.writeText(finalPrompt).then(() => {
-        logTerminal("Đã copy Prompt (có bao gồm độ phân giải cài đặt). Đang mở tab Gemini...", "#0aa");
-        window.open("https://gemini.google.com/app", "_blank");
+        logTerminal("Đã copy Prompt (có bao gồm độ phân giải cài đặt).", "#0aa");
       }).catch(err => {
         logTerminal("Lỗi copy text: " + err, "#f00");
       });

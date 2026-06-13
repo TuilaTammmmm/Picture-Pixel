@@ -315,9 +315,9 @@ class pixelit {
     this.drawto.width = Math.max(1, this.drawto.width * ratio);
     this.drawto.height = Math.max(1, this.drawto.height * ratio);
     
-    this.ctx.mozImageSmoothingEnabled = false;
-    this.ctx.webkitImageSmoothingEnabled = false;
-    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.mozImageSmoothingEnabled = true;
+    this.ctx.webkitImageSmoothingEnabled = true;
+    this.ctx.imageSmoothingEnabled = true;
 
     this.ctx.drawImage(
       canvasCopy,
