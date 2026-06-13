@@ -634,17 +634,47 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         currentZoom = Math.max(0.1, currentZoom - 0.1);
       }
-      canvas.style.transform = `scale(${currentZoom})`;
-      const origCanvas = document.getElementById('pixelitcanvas_orig');
-      if (origCanvas) origCanvas.style.transform = `scale(${currentZoom})`;
+      canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+      const zoomIndicator = document.getElementById('zoom-indicator');
+      if (zoomIndicator) zoomIndicator.innerText = `Zoom: ${Math.round(currentZoom * 100)}%`;
+    });
+
+    let isDragging = false;
+    let startX, startY;
+    let translateX = 0, translateY = 0;
+
+    canvasContainer.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      canvas.style.cursor = 'grabbing';
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+    });
+
+    canvasContainer.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+    });
+
+    canvasContainer.addEventListener('mouseup', () => {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
+    });
+
+    canvasContainer.addEventListener('mouseleave', () => {
+      isDragging = false;
+      canvas.style.cursor = 'grab';
     });
 
     // Reset zoom on double click
     canvasContainer.addEventListener('dblclick', () => {
       currentZoom = 1;
-      canvas.style.transform = `scale(${currentZoom})`;
-      const origCanvas = document.getElementById('pixelitcanvas_orig');
-      if (origCanvas) origCanvas.style.transform = `scale(${currentZoom})`;
+      translateX = 0;
+      translateY = 0;
+      canvas.style.transform = `translate(0px, 0px) scale(${currentZoom})`;
+      const zoomIndicator = document.getElementById('zoom-indicator');
+      if (zoomIndicator) zoomIndicator.innerText = `Zoom: ${Math.round(currentZoom * 100)}%`;
     });
   }
 
