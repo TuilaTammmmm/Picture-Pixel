@@ -1,5 +1,5 @@
 //create object
-const px = new pixelit({ from: document.getElementById("pixelitimg"), to: document.getElementById("pixelitcanvas") });
+const px = new pixelit({ from: document.getElementById("pixelitimg") });
 
 //stuff for webpage functionality
 let paletteList = [
@@ -235,40 +235,29 @@ document.addEventListener("DOMContentLoaded", function () {
     var img = new Image();
     img.src = URL.createObjectURL(this.files[0]);
     img.onload = () => {
-      document.getElementById("pixelitimg_orig").src = img.src;
       px.setFromImgSource(img.src);
-      pxOrig.setFromImgSource(img.src);
       pixelit();
       closeModal();
     };
   };
 
-  // paste image from clipboard
-  document.onpaste = function (event) {
-    var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-    var blob = null;
-    for (var index in items) {
-      var item = items[index];
-      if (item.kind === 'file') {
-        blob = item.getAsFile();
-        break;
-      }
-    }
-    if (blob !== null) {
-      var reader = new FileReader();
-      reader.onload = function (event) {
+  // paste image from clipboard ONLY in the pasteArea
+  pasteArea.addEventListener("paste", function (e) {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (let index in items) {
+      const item = items[index];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const blob = item.getAsFile();
         const img = new Image();
-        img.src = event.target.result;
+        img.src = URL.createObjectURL(blob);
         img.onload = () => {
-          document.getElementById("pixelitimg").src = img.src;
           px.setFromImgSource(img.src);
           pixelit();
           closeModal();
         };
       }
-      reader.readAsDataURL(blob);
     }
-  };
+  });
 
   //load color to palette
   const fileInput = document.getElementById('uploadpalettefile');
@@ -432,28 +421,26 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector(".loader").classList.toggle("active");
     }, 800);
     
+    const mode = document.querySelector("input[name='sizemode']:checked").value;
+    const pixelblock = document.querySelector("#pixelblock");
+    if (mode === 'percent') {
+      px.setScale(blocksize.value);
+    } else {
+      px.setPixelSize(pixelblock.value);
+    }
+
     let selectedPalette = paletteList[currentPalette];
     if (selectedPalette && selectedPalette.colors) {
       selectedPalette = selectedPalette.colors;
     }
+    px.setPalette(selectedPalette)
+      .draw()
+      .pixelate();
 
-    const mode = document.querySelector("input[name='sizemode']:checked").value;
-    const pixelblock = document.querySelector("#pixelblock");
-
-    const applyPixelitSettings = () => {
-      if (mode === 'percent') {
-        px.setScale(blocksize.value);
-      } else {
-        px.setPixelSize(pixelblock.value);
-      }
-      px.setPalette(selectedPalette).draw().pixelate();
-      greyscale.checked ? px.convertGrayscale() : null;
-      palette.checked ? px.convertPalette() : null;
-      maxheight.value ? px.setMaxHeight(maxheight.value).resizeImage() : null;
-      maxwidth.value ? px.setMaxWidth(maxwidth.value).resizeImage() : null;
-    };
-
-    applyPixelitSettings();
+    greyscale.checked ? px.convertGrayscale() : null;
+    palette.checked ? px.convertPalette() : null;
+    maxheight.value ? px.setMaxHeight(maxheight.value).resizeImage() : null;
+    maxwidth.value ? px.setMaxWidth(maxwidth.value).resizeImage() : null;
 
     const imgElem = document.getElementById("pixelitimg");
     if (imgElem && imgElem.src) {
@@ -609,17 +596,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //run on page boot to pixelit default image
   const defaultImg = document.getElementById("pixelitimg");
-  const defaultImgOrig = document.getElementById("pixelitimg_orig");
-  const initDefaultImg = () => {
-    if (defaultImgOrig) defaultImgOrig.src = defaultImg.src;
-    pxOrig.setFromImgSource(defaultImg.src);
-    pixelit();
-  };
-
   if (defaultImg && !defaultImg.complete) {
-    defaultImg.onload = initDefaultImg;
+    defaultImg.onload = pixelit;
   } else {
-    initDefaultImg();
+    pixelit();
   }
 
   // Zoom logic for canvas
@@ -634,48 +614,13 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         currentZoom = Math.max(0.1, currentZoom - 0.1);
       }
-      canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
-      const zoomIndicator = document.getElementById('zoom-indicator');
-      if (zoomIndicator) zoomIndicator.innerText = `Zoom: ${Math.round(currentZoom * 100)}%`;
-    });
-
-    let isDragging = false;
-    let startX, startY;
-    let translateX = 0, translateY = 0;
-
-    canvasContainer.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      canvas.style.cursor = 'grabbing';
-      startX = e.clientX - translateX;
-      startY = e.clientY - translateY;
-    });
-
-    canvasContainer.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      translateX = e.clientX - startX;
-      translateY = e.clientY - startY;
-      canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
-    });
-
-    canvasContainer.addEventListener('mouseup', () => {
-      isDragging = false;
-      canvas.style.cursor = 'grab';
-    });
-
-    canvasContainer.addEventListener('mouseleave', () => {
-      isDragging = false;
-      canvas.style.cursor = 'grab';
+      canvas.style.transform = `scale(${currentZoom})`;
     });
 
     // Reset zoom on double click
     canvasContainer.addEventListener('dblclick', () => {
       currentZoom = 1;
-      translateX = 0;
-      translateY = 0;
-      canvas.style.transform = `translate(0px, 0px) scale(${currentZoom})`;
-      const zoomIndicator = document.getElementById('zoom-indicator');
-      if (zoomIndicator) zoomIndicator.innerText = `Zoom: ${Math.round(currentZoom * 100)}%`;
+      canvas.style.transform = `scale(${currentZoom})`;
     });
   }
-
 });

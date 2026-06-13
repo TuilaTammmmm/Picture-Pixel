@@ -244,37 +244,23 @@
         </div>
         <div class="dothings" style="margin-top: 25px;">
           <!-- download image -->
-          <Button id="downloadimage" class="btn small call" style="width: 100%; font-size: 1.1rem; padding: 10px;"><i class="fas fa-download"></i> Tải ảnh xuống</Button>
+          <Button id="downloadimage" class="btn small call" style="width: 100%; font-size: 1.1rem; padding: 10px;">Tải
+            ảnh xuống</Button>
         </div>
       </div>
-      <div class="header">
-        <a href="https://github.com/giventofly/pixelit"><img
-            src="https://img.shields.io/github/stars/giventofly/pixelit.svg?style=social&label=Star&maxAge=2592000"
-            alt="github star"></a>
-        <a href="https://twitter.com/intent/tweet?text=Pixelit%20-%20create%20pixel%20art%20from%20an%20image%20https://giventofly.github.io/pixelit/&hashtags=pixelit,canvas,pixelart,javascript"
-          target="_blank" rel="noopener noreferrer"><img
-            src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Tweet&maxAge=2592000"
-            alt="tweet pixelit"></a>
-      </div>
     </div>
 
-    <div class="center-panel" id="canvas-container"
-      style="flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #152425; position: relative;">
-      
-      <div id="canvas-sub-container" style="flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;">
-        <canvas id="pixelitcanvas"
-          style="transform-origin: center center; transition: transform 0.1s ease-out; cursor: grab; max-width: none; border: none; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated;"></canvas>
-      </div>
-      <div style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; pointer-events: none;">
-        <span id="zoom-indicator">Zoom: 100%</span> | Lăn chuột để Zoom | Kéo thả để Di chuyển
-      </div>
+    <div class="right-panel" id="canvas-container"
+      style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; background-color: #152425; position: relative;">
+      <canvas id="pixelitcanvas"
+        style="transform-origin: center center; transition: transform 0.1s ease-out; cursor: grab; max-width: none; border: none;"></canvas>
     </div>
-
   </div>
-  <img src="assets/sky.jpg" id="pixelitimg" alt="" style="display: none;">
+  <img src="assets/sky.jpg" id="pixelitimg" alt="">
+  <!--<img style="visibility: hidden;" id="pixlimg" alt="">  -->
   <script src="js/pixelit.min.js"></script>
   <script src="js/slim.select.min.js"></script>
-  <script src="js/main.min.js?v2"></script>
+  <script src="js/main.min.js?v1"></script>
   <!-- loader-->
   <div class="loader">
     <div class="lds-spinner">
