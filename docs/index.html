@@ -253,8 +253,8 @@
     <div class="center-panel" id="canvas-container"
       style="flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #152425; position: relative;">
       
-      <div id="ai-original-container" style="display: none; height: 50%; width: 100%; flex-shrink: 0; justify-content: center; align-items: center; border-bottom: 2px dashed #444; background: #0f1a1a; padding: 10px; box-sizing: border-box;">
-        <img id="ai-original-img" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      <div id="ai-original-container" style="display: none; height: 50%; width: 100%; flex-shrink: 0; justify-content: center; align-items: center; border-bottom: 2px dashed #444; background: #0f1a1a; padding: 10px; box-sizing: border-box; overflow: hidden; position: relative;">
+        <canvas id="pixelitcanvas_orig" style="transform-origin: center center; transition: transform 0.1s ease-out; cursor: grab; max-width: none; border: none;"></canvas>
       </div>
       
       <div id="canvas-sub-container" style="flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;">
@@ -285,8 +285,8 @@
       </div>
     </div>
   </div>
-  <img src="assets/sky.jpg" id="pixelitimg" alt="">
-  <!--<img style="visibility: hidden;" id="pixlimg" alt="">  -->
+  <img src="assets/sky.jpg" id="pixelitimg" alt="" style="display: none;">
+  <img src="assets/sky.jpg" id="pixelitimg_orig" alt="" style="display: none;">
   <script src="js/pixelit.min.js"></script>
   <script src="js/slim.select.min.js"></script>
   <script src="js/main.min.js?v1"></script>

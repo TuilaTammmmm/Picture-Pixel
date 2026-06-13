@@ -1,5 +1,6 @@
 //create object
-const px = new pixelit({ from: document.getElementById("pixelitimg") });
+const px = new pixelit({ from: document.getElementById("pixelitimg"), to: document.getElementById("pixelitcanvas") });
+const pxOrig = new pixelit({ from: document.getElementById("pixelitimg_orig"), to: document.getElementById("pixelitcanvas_orig") });
 
 //stuff for webpage functionality
 let paletteList = [
@@ -235,9 +236,9 @@ document.addEventListener("DOMContentLoaded", function () {
     var img = new Image();
     img.src = URL.createObjectURL(this.files[0]);
     img.onload = () => {
+      document.getElementById("pixelitimg_orig").src = img.src;
       px.setFromImgSource(img.src);
-      const aiOriginalImg = document.getElementById("ai-original-img");
-      if (aiOriginalImg) aiOriginalImg.src = img.src;
+      pxOrig.setFromImgSource(img.src);
       pixelit();
       closeModal();
     };
@@ -253,9 +254,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const img = new Image();
         img.src = URL.createObjectURL(blob);
         img.onload = () => {
+          document.getElementById("pixelitimg_orig").src = img.src;
           px.setFromImgSource(img.src);
-          const aiOriginalImg = document.getElementById("ai-original-img");
-          if (aiOriginalImg) aiOriginalImg.src = img.src;
+          pxOrig.setFromImgSource(img.src);
           pixelit();
           closeModal();
         };
@@ -425,26 +426,31 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector(".loader").classList.toggle("active");
     }, 800);
     
-    const mode = document.querySelector("input[name='sizemode']:checked").value;
-    const pixelblock = document.querySelector("#pixelblock");
-    if (mode === 'percent') {
-      px.setScale(blocksize.value);
-    } else {
-      px.setPixelSize(pixelblock.value);
-    }
-
     let selectedPalette = paletteList[currentPalette];
     if (selectedPalette && selectedPalette.colors) {
       selectedPalette = selectedPalette.colors;
     }
-    px.setPalette(selectedPalette)
-      .draw()
-      .pixelate();
 
-    greyscale.checked ? px.convertGrayscale() : null;
-    palette.checked ? px.convertPalette() : null;
-    maxheight.value ? px.setMaxHeight(maxheight.value).resizeImage() : null;
-    maxwidth.value ? px.setMaxWidth(maxwidth.value).resizeImage() : null;
+    const mode = document.querySelector("input[name='sizemode']:checked").value;
+    const pixelblock = document.querySelector("#pixelblock");
+
+    const applyPixelitSettings = (pInst) => {
+      if (mode === 'percent') {
+        pInst.setScale(blocksize.value);
+      } else {
+        pInst.setPixelSize(pixelblock.value);
+      }
+      pInst.setPalette(selectedPalette).draw().pixelate();
+      greyscale.checked ? pInst.convertGrayscale() : null;
+      palette.checked ? pInst.convertPalette() : null;
+      maxheight.value ? pInst.setMaxHeight(maxheight.value).resizeImage() : null;
+      maxwidth.value ? pInst.setMaxWidth(maxwidth.value).resizeImage() : null;
+    };
+
+    applyPixelitSettings(px);
+    if (isAIMode) {
+      applyPixelitSettings(pxOrig);
+    }
 
     const imgElem = document.getElementById("pixelitimg");
     if (imgElem && imgElem.src) {
@@ -471,15 +477,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const absElem = document.getElementById("pixel_dimensions_abs");
             if (absElem) absElem.innerText = `(${scaledW} x ${scaledH} px)`;
         }
-    }
-    
-    // Sync top image size to bottom canvas
-    const canvasElem = document.getElementById("pixelitcanvas");
-    const aiOrig = document.getElementById("ai-original-img");
-    if (canvasElem && aiOrig) {
-        aiOrig.style.width = canvasElem.width + "px";
-        aiOrig.style.height = canvasElem.height + "px";
-        aiOrig.style.objectFit = "fill";
     }
   };
 
@@ -609,9 +606,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   //run on page boot to pixelit default image
   const defaultImg = document.getElementById("pixelitimg");
+  const defaultImgOrig = document.getElementById("pixelitimg_orig");
   const initDefaultImg = () => {
-    const aiOriginalImg = document.getElementById("ai-original-img");
-    if (aiOriginalImg) aiOriginalImg.src = defaultImg.src;
+    if (defaultImgOrig) defaultImgOrig.src = defaultImg.src;
+    pxOrig.setFromImgSource(defaultImg.src);
     pixelit();
   };
 
@@ -634,16 +632,16 @@ document.addEventListener("DOMContentLoaded", function () {
         currentZoom = Math.max(0.1, currentZoom - 0.1);
       }
       canvas.style.transform = `scale(${currentZoom})`;
-      const origImg = document.getElementById('ai-original-img');
-      if (origImg) origImg.style.transform = `scale(${currentZoom})`;
+      const origCanvas = document.getElementById('pixelitcanvas_orig');
+      if (origCanvas) origCanvas.style.transform = `scale(${currentZoom})`;
     });
 
     // Reset zoom on double click
     canvasContainer.addEventListener('dblclick', () => {
       currentZoom = 1;
       canvas.style.transform = `scale(${currentZoom})`;
-      const origImg = document.getElementById('ai-original-img');
-      if (origImg) origImg.style.transform = `scale(${currentZoom})`;
+      const origCanvas = document.getElementById('pixelitcanvas_orig');
+      if (origCanvas) origCanvas.style.transform = `scale(${currentZoom})`;
     });
   }
 
@@ -702,7 +700,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const apiKey = aiApiKeyInput.value.trim();
       const promptText = document.getElementById("ai-prompt").value.trim();
       const strength = parseFloat(aiStrengthSlider.value);
-      const originalImg = document.getElementById("ai-original-img");
+      const originalImg = document.getElementById("pixelitimg_orig");
 
       if (!apiKey) {
         logTerminal("Lỗi: Vui lòng nhập API Key!", "#f00");
