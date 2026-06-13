@@ -244,18 +244,22 @@
         </div>
         <div class="dothings" style="margin-top: 25px;">
           <!-- download image -->
-          <Button id="downloadimage" class="btn small call" style="width: 100%; font-size: 1.1rem; padding: 10px;">Tải ảnh xuống</Button>
-          <button id="toggle-ai-btn" class="btn small" style="width: 100%; margin-top: 15px; font-size: 1rem; padding: 8px; background: #2b484b;">Bật Tính năng AI</button>
+          <Button id="downloadimage" class="btn small call" style="width: 100%; font-size: 1.1rem; padding: 10px;"><i class="fas fa-download"></i> Tải ảnh xuống</Button>
         </div>
+      </div>
+      <div class="header">
+        <a href="https://github.com/giventofly/pixelit"><img
+            src="https://img.shields.io/github/stars/giventofly/pixelit.svg?style=social&label=Star&maxAge=2592000"
+            alt="github star"></a>
+        <a href="https://twitter.com/intent/tweet?text=Pixelit%20-%20create%20pixel%20art%20from%20an%20image%20https://giventofly.github.io/pixelit/&hashtags=pixelit,canvas,pixelart,javascript"
+          target="_blank" rel="noopener noreferrer"><img
+            src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social&label=Tweet&maxAge=2592000"
+            alt="tweet pixelit"></a>
       </div>
     </div>
 
     <div class="center-panel" id="canvas-container"
       style="flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #152425; position: relative;">
-      
-      <div id="ai-original-container" style="display: none; height: 50%; width: 100%; flex-shrink: 0; justify-content: center; align-items: center; border-bottom: 2px dashed #444; background: #0f1a1a; padding: 10px; box-sizing: border-box; overflow: hidden; position: relative;">
-        <canvas id="pixelitcanvas_orig" style="transform-origin: center center; transition: transform 0.1s ease-out; cursor: grab; max-width: none; border: none;"></canvas>
-      </div>
       
       <div id="canvas-sub-container" style="flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;">
         <canvas id="pixelitcanvas"
@@ -263,32 +267,8 @@
       </div>
     </div>
 
-    <div class="ai-panel" id="ai-panel" style="display: none; width: 350px; flex-shrink: 0; padding: 20px; overflow-y: auto; background-color: #1a2c2e; border-left: 2px solid #0f1a1a;">
-      <h2 style="font-size: 1.5rem; margin-bottom: 20px;">TRỢ LÝ GEMINI</h2>
-      <div class="infoselects">
-        
-        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-          <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">Mở tab Gemini ở nửa màn hình bên cạnh để thực hiện quy trình này cực kỳ nhanh chóng.</p>
-          
-          <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">Prompt (Nội dung bạn muốn vẽ):</label>
-          <textarea id="ai-prompt" rows="3" placeholder="Ví dụ: Một chú thỏ ngầu lòi đang hút thuốc..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #21383a; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 15px; resize: vertical; box-sizing: border-box;"></textarea>
-
-          <button class="btn small" id="ai-copy-sketch-btn" style="width: 100%; margin-bottom: 10px; background: #546e7a;">1. Copy Ảnh Phác Thảo</button>
-          <button class="btn small" id="ai-copy-prompt-btn" style="width: 100%; margin-bottom: 10px; background: #0277bd;">2. Copy Prompt</button>
-          
-          <div style="text-align: center; margin-top: 15px;">
-             <span style="font-size: 0.9rem; color: #4caf50; font-weight: bold;">3. Nhấn Ctrl + V ở trang này để dán ảnh kết quả!</span>
-          </div>
-        </div>
-
-        <div id="ai-terminal" style="background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; padding: 10px; height: 130px; overflow-y: auto; font-size: 12px; border: 1px solid #333; margin-top: 15px; border-radius: 4px; box-sizing: border-box;">
-          &gt; Hệ thống kết nối Gemini đã sẵn sàng...<br>
-        </div>
-      </div>
-    </div>
   </div>
   <img src="assets/sky.jpg" id="pixelitimg" alt="" style="display: none;">
-  <img src="assets/sky.jpg" id="pixelitimg_orig" alt="" style="display: none;">
   <script src="js/pixelit.min.js"></script>
   <script src="js/slim.select.min.js"></script>
   <script src="js/main.min.js?v2"></script>

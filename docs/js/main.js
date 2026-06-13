@@ -1,6 +1,5 @@
 //create object
 const px = new pixelit({ from: document.getElementById("pixelitimg"), to: document.getElementById("pixelitcanvas") });
-const pxOrig = new pixelit({ from: document.getElementById("pixelitimg_orig"), to: document.getElementById("pixelitcanvas_orig") });
 
 //stuff for webpage functionality
 let paletteList = [
@@ -261,21 +260,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const img = new Image();
         img.src = event.target.result;
         img.onload = () => {
-          if (isAIMode) {
-            px.setFromImgSource(img.src);
-            pixelit();
-            const terminal = document.getElementById("ai-terminal");
-            if (terminal) {
-              const time = new Date().toLocaleTimeString();
-              terminal.innerHTML += `<span style="color: #666;">[${time}]</span> <span style="color: #0f0;">Đã dán và Pixel hóa kết quả từ Gemini thành công!</span><br>`;
-              terminal.scrollTop = terminal.scrollHeight;
-            }
-          } else {
-            document.getElementById("pixelitimg_orig").src = img.src;
-            px.setFromImgSource(img.src);
-            pxOrig.setFromImgSource(img.src);
-            pixelit();
-          }
+          document.getElementById("pixelitimg").src = img.src;
+          px.setFromImgSource(img.src);
+          pixelit();
           closeModal();
         };
       }
@@ -453,23 +440,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const mode = document.querySelector("input[name='sizemode']:checked").value;
     const pixelblock = document.querySelector("#pixelblock");
 
-    const applyPixelitSettings = (pInst) => {
+    const applyPixelitSettings = () => {
       if (mode === 'percent') {
-        pInst.setScale(blocksize.value);
+        px.setScale(blocksize.value);
       } else {
-        pInst.setPixelSize(pixelblock.value);
+        px.setPixelSize(pixelblock.value);
       }
-      pInst.setPalette(selectedPalette).draw().pixelate();
-      greyscale.checked ? pInst.convertGrayscale() : null;
-      palette.checked ? pInst.convertPalette() : null;
-      maxheight.value ? pInst.setMaxHeight(maxheight.value).resizeImage() : null;
-      maxwidth.value ? pInst.setMaxWidth(maxwidth.value).resizeImage() : null;
+      px.setPalette(selectedPalette).draw().pixelate();
+      greyscale.checked ? px.convertGrayscale() : null;
+      palette.checked ? px.convertPalette() : null;
+      maxheight.value ? px.setMaxHeight(maxheight.value).resizeImage() : null;
+      maxwidth.value ? px.setMaxWidth(maxwidth.value).resizeImage() : null;
     };
 
-    applyPixelitSettings(px);
-    if (isAIMode) {
-      applyPixelitSettings(pxOrig);
-    }
+    applyPixelitSettings();
 
     const imgElem = document.getElementById("pixelitimg");
     if (imgElem && imgElem.src) {
@@ -664,95 +648,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // --- AI INTEGRATION LOGIC ---
-  let isAIMode = false;
-  const toggleAIBtn = document.getElementById("toggle-ai-btn");
-  const aiPanel = document.getElementById("ai-panel");
-  const aiOriginalContainer = document.getElementById("ai-original-container");
-  
-  if (toggleAIBtn) {
-    toggleAIBtn.addEventListener("click", () => {
-      isAIMode = !isAIMode;
-      if (isAIMode) {
-        toggleAIBtn.innerText = "Tắt Tính năng AI";
-        toggleAIBtn.style.background = "#a83232";
-        aiPanel.style.display = "block";
-        aiOriginalContainer.style.display = "flex";
-        setTimeout(() => pixelit(), 50);
-      } else {
-        toggleAIBtn.innerText = "Bật Tính năng AI";
-        toggleAIBtn.style.background = "#2b484b";
-        aiPanel.style.display = "none";
-        aiOriginalContainer.style.display = "none";
-      }
-    });
-  }
-
-  const aiStrengthSlider = document.getElementById("ai-strength");
-  const aiStrengthVal = document.getElementById("ai-strength-val");
-  if (aiStrengthSlider) {
-    aiStrengthSlider.addEventListener("input", (e) => {
-      aiStrengthVal.innerText = e.target.value;
-    });
-  }
-
-  // Load API Key from LocalStorage
-  const aiApiKeyInput = document.getElementById("ai-apikey");
-  if (aiApiKeyInput) {
-    aiApiKeyInput.value = localStorage.getItem("stability_api_key") || "";
-    aiApiKeyInput.addEventListener("input", (e) => {
-      localStorage.setItem("stability_api_key", e.target.value.trim());
-    });
-  }
-
-  // --- GEMINI BRIDGE LOGIC ---
-  const logTerminal = (msg, color = "#0f0") => {
-    const aiTerminal = document.getElementById("ai-terminal");
-    if (!aiTerminal) return;
-    const time = new Date().toLocaleTimeString();
-    aiTerminal.innerHTML += `<span style="color: #666;">[${time}]</span> <span style="color: ${color};">${msg}</span><br>`;
-    aiTerminal.scrollTop = aiTerminal.scrollHeight;
-  };
-
-  const copySketchBtn = document.getElementById("ai-copy-sketch-btn");
-  if (copySketchBtn) {
-    copySketchBtn.addEventListener("click", () => {
-      const origImg = document.getElementById("pixelitimg_orig");
-      if (!origImg || !origImg.src) return;
-      const tempCvs = document.createElement("canvas");
-      tempCvs.width = origImg.naturalWidth;
-      tempCvs.height = origImg.naturalHeight;
-      tempCvs.getContext("2d").drawImage(origImg, 0, 0);
-      tempCvs.toBlob(blob => {
-        if (!blob) return;
-        const item = new ClipboardItem({ "image/png": blob });
-        navigator.clipboard.write([item]).then(() => {
-          logTerminal("Đã copy ảnh phác thảo! Nhấn Ctrl+V để dán vào Gemini.", "#0aa");
-        }).catch(err => {
-          logTerminal("Lỗi copy ảnh: " + err, "#f00");
-        });
-      });
-    });
-  }
-
-  const copyPromptBtn = document.getElementById("ai-copy-prompt-btn");
-  if (copyPromptBtn) {
-    copyPromptBtn.addEventListener("click", () => {
-      const promptText = document.getElementById("ai-prompt").value.trim();
-      const w = document.getElementById("maxwidth").value || 64;
-      const h = document.getElementById("maxheight").value || 64;
-      
-      const fullPrompt = promptText 
-          ? `Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh hoàn chỉnh. Yêu cầu chi tiết: ${promptText}. Vẽ theo phong cách pixel art tuyệt đẹp. Hãy xuất ảnh với chủ thể ở giữa.` 
-          : `Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh pixel art hoàn chỉnh tuyệt đẹp. Hãy xuất ảnh với chủ thể ở giữa.`;
-      
-      const finalPrompt = fullPrompt + `\n(Ghi chú cho AI: Độ phân giải pixel sẽ được phần mềm thu về giới hạn tối đa tỉ lệ ${w}x${h}, nên xin hãy vẽ các mảng màu/chi tiết lớn, tránh vỡ nét).`;
-
-      navigator.clipboard.writeText(finalPrompt).then(() => {
-        logTerminal("Đã copy Prompt (có bao gồm độ phân giải cài đặt).", "#0aa");
-      }).catch(err => {
-        logTerminal("Lỗi copy text: " + err, "#f00");
-      });
-    });
-  }
 });
