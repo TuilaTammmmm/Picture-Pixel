@@ -244,25 +244,44 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   };
 
-  // paste image from clipboard ONLY in the pasteArea
-  pasteArea.addEventListener("paste", function (e) {
-    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-    for (let index in items) {
-      const item = items[index];
-      if (item.kind === 'file' && item.type.startsWith('image/')) {
-        const blob = item.getAsFile();
+  // paste image from clipboard
+  document.onpaste = function (event) {
+    var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    var blob = null;
+    for (var index in items) {
+      var item = items[index];
+      if (item.kind === 'file') {
+        blob = item.getAsFile();
+        break;
+      }
+    }
+    if (blob !== null) {
+      var reader = new FileReader();
+      reader.onload = function (event) {
         const img = new Image();
-        img.src = URL.createObjectURL(blob);
+        img.src = event.target.result;
         img.onload = () => {
-          document.getElementById("pixelitimg_orig").src = img.src;
-          px.setFromImgSource(img.src);
-          pxOrig.setFromImgSource(img.src);
-          pixelit();
+          if (isAIMode) {
+            px.setFromImgSource(img.src);
+            pixelit();
+            const terminal = document.getElementById("ai-terminal");
+            if (terminal) {
+              const time = new Date().toLocaleTimeString();
+              terminal.innerHTML += `<span style="color: #666;">[${time}]</span> <span style="color: #0f0;">Đã dán và Pixel hóa kết quả từ Gemini thành công!</span><br>`;
+              terminal.scrollTop = terminal.scrollHeight;
+            }
+          } else {
+            document.getElementById("pixelitimg_orig").src = img.src;
+            px.setFromImgSource(img.src);
+            pxOrig.setFromImgSource(img.src);
+            pixelit();
+          }
           closeModal();
         };
       }
+      reader.readAsDataURL(blob);
     }
-  });
+  };
 
   //load color to palette
   const fileInput = document.getElementById('uploadpalettefile');
@@ -687,6 +706,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // --- GEMINI BRIDGE LOGIC ---
+  const logTerminal = (msg, color = "#0f0") => {
+    const aiTerminal = document.getElementById("ai-terminal");
+    if (!aiTerminal) return;
+    const time = new Date().toLocaleTimeString();
+    aiTerminal.innerHTML += `<span style="color: #666;">[${time}]</span> <span style="color: ${color};">${msg}</span><br>`;
+    aiTerminal.scrollTop = aiTerminal.scrollHeight;
+  };
+
   const copySketchBtn = document.getElementById("ai-copy-sketch-btn");
   if (copySketchBtn) {
     copySketchBtn.addEventListener("click", () => {
@@ -712,119 +739,23 @@ document.addEventListener("DOMContentLoaded", function () {
   if (copyPromptBtn) {
     copyPromptBtn.addEventListener("click", () => {
       const promptText = document.getElementById("ai-prompt").value.trim();
-      const fullPrompt = promptText ? `Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh hoàn chỉnh. Yêu cầu: ${promptText}. Vẽ theo phong cách pixel art tuyệt đẹp.` : "Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh pixel art hoàn chỉnh tuyệt đẹp.";
-      navigator.clipboard.writeText(fullPrompt).then(() => {
-        logTerminal("Đã copy Prompt. Đang mở tab Gemini...", "#0aa");
+      const w = document.getElementById("maxwidth").value || 64;
+      const h = document.getElementById("maxheight").value || 64;
+      
+      const fullPrompt = promptText 
+          ? `Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh hoàn chỉnh. Yêu cầu chi tiết: ${promptText}. Vẽ theo phong cách pixel art tuyệt đẹp. Hãy xuất ảnh với chủ thể ở giữa.` 
+          : `Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh pixel art hoàn chỉnh tuyệt đẹp. Hãy xuất ảnh với chủ thể ở giữa.`;
+      
+      const finalPrompt = fullPrompt + `\n(Ghi chú cho AI: Độ phân giải pixel sẽ được phần mềm thu về giới hạn tối đa tỉ lệ ${w}x${h}, nên xin hãy vẽ các mảng màu/chi tiết lớn, tránh vỡ nét).`;
+
+      navigator.clipboard.writeText(finalPrompt).then(() => {
+        logTerminal("Đã copy Prompt (có bao gồm độ phân giải cài đặt). Đang mở tab Gemini...", "#0aa");
         window.open("https://gemini.google.com/app", "_blank");
       }).catch(err => {
         logTerminal("Lỗi copy text: " + err, "#f00");
       });
     });
   }
-
-  const pasteAIBtn = document.getElementById("ai-paste-result-btn");
-  if (pasteAIBtn) {
-    pasteAIBtn.addEventListener("click", async () => {
-      try {
-        const items = await navigator.clipboard.read();
-        for (const item of items) {
-          const imageTypes = item.types.filter(type => type.startsWith('image/'));
-          if (imageTypes.length > 0) {
-            const blob = await item.getType(imageTypes[0]);
-            const img = new Image();
-            img.src = URL.createObjectURL(blob);
-            img.onload = () => {
-              px.setFromImgSource(img.src);
-              pixelit();
-              logTerminal("Đã dán và Pixel hóa kết quả từ Gemini thành công!", "#0f0");
-            };
-            return;
-          }
-        }
-        logTerminal("Lỗi: Không tìm thấy ảnh trong bộ nhớ tạm (Clipboard rỗng).", "#f00");
-      } catch (err) {
-        console.error(err);
-        logTerminal("Lỗi: Trình duyệt chặn đọc Clipboard. Hãy bôi đen Canvas dưới và ấn Ctrl+V thay thế.", "#f00");
-      }
-    });
-  }
-
-  // --- STABILITY AI LOGIC ---
-  const generateAIBtn = document.getElementById("ai-generate-btn");
-  const aiTerminal = document.getElementById("ai-terminal");
-  
-  const logTerminal = (msg, color = "#0f0") => {
-    if (!aiTerminal) return;
-    const time = new Date().toLocaleTimeString();
-    aiTerminal.innerHTML += `<span style="color: #666;">[${time}]</span> <span style="color: ${color};">${msg}</span><br>`;
-    aiTerminal.scrollTop = aiTerminal.scrollHeight;
-  };
-  
-  if (generateAIBtn) {
-    generateAIBtn.addEventListener("click", async () => {
-      const apiKey = aiApiKeyInput.value.trim();
-      const promptText = document.getElementById("ai-prompt").value.trim();
-      const strength = parseFloat(aiStrengthSlider.value);
-      const originalImg = document.getElementById("pixelitimg_orig");
-
-      if (!apiKey) {
-        logTerminal("Lỗi: Vui lòng nhập API Key!", "#f00");
-        return;
-      }
-      if (!promptText) {
-        logTerminal("Lỗi: Vui lòng nhập Prompt!", "#f00");
-        return;
-      }
-      if (!originalImg || !originalImg.src) {
-        logTerminal("Lỗi: Vui lòng tải ảnh phác thảo lên!", "#f00");
-        return;
-      }
-
-      logTerminal("Khởi tạo dữ liệu gửi lên AI...", "#0aa");
-
-      try {
-        const formData = new FormData();
-        const responseBlob = await fetch(originalImg.src).then(res => res.blob());
-        
-        formData.append("image", responseBlob, "sketch.png");
-        formData.append("prompt", promptText + ", pixel art style, high quality, masterpiece, detailed");
-        formData.append("control_strength", strength);
-        formData.append("output_format", "png");
-
-        logTerminal("Đang tải dữ liệu lên máy chủ Stability AI...", "#ffaa00");
-        document.querySelector(".loader").classList.add("active");
-
-        const response = await fetch("https://api.stability.ai/v2beta/stable-image/control/sketch", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Accept": "image/*"
-          },
-          body: formData
-        });
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.message || `Mã lỗi HTTP: ${response.status}`);
-        }
-
-        logTerminal("Xử lý thành công! Đang lấy ảnh về...", "#0f0");
-        
-        const blob = await response.blob();
-        const newSrc = URL.createObjectURL(blob);
-          
-        const newImg = new Image();
-        newImg.src = newSrc;
-        newImg.onload = () => {
-          px.setFromImgSource(newImg.src);
-          pixelit();
-          logTerminal("Đã áp dụng bộ lọc Pixel Art lên ảnh AI!", "#0f0");
-          document.querySelector(".loader").classList.remove("active");
-        };
-      } catch (error) {
-        console.error(error);
-        logTerminal("Lỗi: " + error.message, "#f00");
-        document.querySelector(".loader").classList.remove("active");
       }
     });
   }
