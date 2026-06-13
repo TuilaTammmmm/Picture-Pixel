@@ -472,6 +472,15 @@ document.addEventListener("DOMContentLoaded", function () {
             if (absElem) absElem.innerText = `(${scaledW} x ${scaledH} px)`;
         }
     }
+    
+    // Sync top image size to bottom canvas
+    const canvasElem = document.getElementById("pixelitcanvas");
+    const aiOrig = document.getElementById("ai-original-img");
+    if (canvasElem && aiOrig) {
+        aiOrig.style.width = canvasElem.width + "px";
+        aiOrig.style.height = canvasElem.height + "px";
+        aiOrig.style.objectFit = "fill";
+    }
   };
 
 
@@ -625,12 +634,16 @@ document.addEventListener("DOMContentLoaded", function () {
         currentZoom = Math.max(0.1, currentZoom - 0.1);
       }
       canvas.style.transform = `scale(${currentZoom})`;
+      const origImg = document.getElementById('ai-original-img');
+      if (origImg) origImg.style.transform = `scale(${currentZoom})`;
     });
 
     // Reset zoom on double click
     canvasContainer.addEventListener('dblclick', () => {
       currentZoom = 1;
       canvas.style.transform = `scale(${currentZoom})`;
+      const origImg = document.getElementById('ai-original-img');
+      if (origImg) origImg.style.transform = `scale(${currentZoom})`;
     });
   }
 
@@ -675,7 +688,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const generateAIBtn = document.getElementById("ai-generate-btn");
-  const aiStatus = document.getElementById("ai-status");
+  const aiTerminal = document.getElementById("ai-terminal");
+  
+  const logTerminal = (msg, color = "#0f0") => {
+    if (!aiTerminal) return;
+    const time = new Date().toLocaleTimeString();
+    aiTerminal.innerHTML += `<span style="color: #666;">[${time}]</span> <span style="color: ${color};">${msg}</span><br>`;
+    aiTerminal.scrollTop = aiTerminal.scrollHeight;
+  };
   
   if (generateAIBtn) {
     generateAIBtn.addEventListener("click", async () => {
@@ -685,92 +705,62 @@ document.addEventListener("DOMContentLoaded", function () {
       const originalImg = document.getElementById("ai-original-img");
 
       if (!apiKey) {
-        aiStatus.innerText = "Lỗi: Vui lòng nhập API Key!";
-        aiStatus.style.color = "#f44336";
+        logTerminal("Lỗi: Vui lòng nhập API Key!", "#f00");
         return;
       }
       if (!promptText) {
-        aiStatus.innerText = "Lỗi: Vui lòng nhập Prompt!";
-        aiStatus.style.color = "#f44336";
+        logTerminal("Lỗi: Vui lòng nhập Prompt!", "#f00");
         return;
       }
       if (!originalImg || !originalImg.src) {
-        aiStatus.innerText = "Lỗi: Vui lòng tải ảnh phác thảo lên!";
-        aiStatus.style.color = "#f44336";
+        logTerminal("Lỗi: Vui lòng tải ảnh phác thảo lên!", "#f00");
         return;
       }
 
-      // Resize original image to max 1024x1024 and multiple of 64
-      const tempCanvas = document.createElement("canvas");
-      let w = originalImg.naturalWidth || originalImg.width;
-      let h = originalImg.naturalHeight || originalImg.height;
-      const maxDim = 1024;
-      if (w > maxDim || h > maxDim) {
-        const ratio = Math.min(maxDim / w, maxDim / h);
-        w = Math.floor(w * ratio);
-        h = Math.floor(h * ratio);
-      }
-      w = Math.floor(w / 64) * 64 || 64;
-      h = Math.floor(h / 64) * 64 || 64;
-      
-      tempCanvas.width = w;
-      tempCanvas.height = h;
-      const ctx = tempCanvas.getContext("2d");
-      ctx.drawImage(originalImg, 0, 0, w, h);
-      const base64DataUrl = tempCanvas.toDataURL("image/png");
-      const base64Only = base64DataUrl.replace(/^data:image\/png;base64,/, "");
-
-      aiStatus.innerText = "Đang vẽ ảnh... (Vui lòng chờ)";
-      aiStatus.style.color = "#dfb213";
-      document.querySelector(".loader").classList.add("active");
+      logTerminal("Khởi tạo dữ liệu gửi lên AI...", "#0aa");
 
       try {
-        const response = await fetch("https://api.stability.ai/v1/generation/stable-diffusion-v1-6/image-to-image", {
+        const formData = new FormData();
+        const responseBlob = await fetch(originalImg.src).then(res => res.blob());
+        
+        formData.append("image", responseBlob, "sketch.png");
+        formData.append("prompt", promptText + ", pixel art style, high quality, masterpiece, detailed");
+        formData.append("control_strength", strength);
+        formData.append("output_format", "png");
+
+        logTerminal("Đang tải dữ liệu lên máy chủ Stability AI...", "#ffaa00");
+        document.querySelector(".loader").classList.add("active");
+
+        const response = await fetch("https://api.stability.ai/v2beta/stable-image/control/sketch", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
             "Authorization": `Bearer ${apiKey}`,
+            "Accept": "image/*"
           },
-          body: JSON.stringify({
-            init_image: base64Only,
-            init_image_mode: "IMAGE_STRENGTH",
-            image_strength: strength,
-            text_prompts: [
-              { text: promptText + ", pixel art style, high quality, masterpiece", weight: 1 }
-            ],
-            cfg_scale: 7,
-            samples: 1,
-            steps: 30,
-          }),
+          body: formData
         });
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.message || `API Error: ${response.status}`);
+          throw new Error(errData.message || `Mã lỗi HTTP: ${response.status}`);
         }
 
-        const data = await response.json();
-        if (data.artifacts && data.artifacts.length > 0) {
-          const generatedBase64 = data.artifacts[0].base64;
-          const newSrc = `data:image/png;base64,${generatedBase64}`;
+        logTerminal("Xử lý thành công! Đang lấy ảnh về...", "#0f0");
+        
+        const blob = await response.blob();
+        const newSrc = URL.createObjectURL(blob);
           
-          const newImg = new Image();
-          newImg.src = newSrc;
-          newImg.onload = () => {
-            px.setFromImgSource(newImg.src);
-            pixelit();
-            aiStatus.innerText = "Tạo ảnh thành công!";
-            aiStatus.style.color = "#4caf50";
-            document.querySelector(".loader").classList.remove("active");
-          };
-        } else {
-           throw new Error("Không nhận được ảnh từ AI.");
-        }
+        const newImg = new Image();
+        newImg.src = newSrc;
+        newImg.onload = () => {
+          px.setFromImgSource(newImg.src);
+          pixelit();
+          logTerminal("Đã áp dụng bộ lọc Pixel Art lên ảnh AI!", "#0f0");
+          document.querySelector(".loader").classList.remove("active");
+        };
       } catch (error) {
         console.error(error);
-        aiStatus.innerText = "Lỗi: " + error.message;
-        aiStatus.style.color = "#f44336";
+        logTerminal("Lỗi: " + error.message, "#f00");
         document.querySelector(".loader").classList.remove("active");
       }
     });
