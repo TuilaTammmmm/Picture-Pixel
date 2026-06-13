@@ -266,19 +266,32 @@
     <div class="ai-panel" id="ai-panel" style="display: none; width: 350px; flex-shrink: 0; padding: 20px; overflow-y: auto; background-color: #1a2c2e; border-left: 2px solid #0f1a1a;">
       <h2 style="font-size: 1.5rem; margin-bottom: 20px;">CÀI ĐẶT AI</h2>
       <div class="infoselects">
-        <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">API Key (Stability AI):</label>
-        <input type="password" id="ai-apikey" placeholder="sk-..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #21383a; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 15px;">
         
-        <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">Prompt (Mô tả):</label>
-        <textarea id="ai-prompt" rows="4" placeholder="Ví dụ: A magical spellbook pixel art, beautiful colors..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #21383a; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 15px; resize: vertical; box-sizing: border-box;"></textarea>
-
-        <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">Độ bám sát phác thảo (0 - 1):</label>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-           <input type="range" id="ai-strength" min="0" max="1" step="0.05" value="0.5" style="flex: 1;">
-           <span id="ai-strength-val" style="width: 30px; text-align: center;">0.5</span>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.1rem; color: #03a9f4; margin-bottom: 10px;">Kết nối Gemini (Thủ công)</h3>
+          <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">Dùng khi bạn mở AI ở cửa sổ bên cạnh.</p>
+          <button class="btn small" id="ai-copy-sketch-btn" style="width: 100%; margin-bottom: 10px; background: #546e7a;">1. Copy Ảnh Phác Thảo</button>
+          <button class="btn small" id="ai-copy-prompt-btn" style="width: 100%; margin-bottom: 10px; background: #0277bd;">2. Copy Prompt & Mở Gemini</button>
+          <button class="btn small call" id="ai-paste-result-btn" style="width: 100%; background: #2e7d32;">3. Dán ảnh Kết quả AI vào đây</button>
         </div>
 
-        <button class="btn small call" id="ai-generate-btn" style="width: 100%; font-size: 1.1rem; padding: 10px; margin-top: 10px;">Vẽ ảnh bằng AI</button>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="font-size: 1.1rem; color: #4caf50; margin-bottom: 10px;">Tự động (Stability API)</h3>
+          <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">API Key (Stability AI):</label>
+          <input type="password" id="ai-apikey" placeholder="sk-..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #21383a; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 15px;">
+          
+          <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">Prompt (Mô tả chung):</label>
+          <textarea id="ai-prompt" rows="3" placeholder="Ví dụ: A magical spellbook pixel art, beautiful colors..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #21383a; background: rgba(255,255,255,0.1); color: #fff; margin-bottom: 15px; resize: vertical; box-sizing: border-box;"></textarea>
+
+          <label style="display: block; font-size: 0.9rem; margin-bottom: 5px; color: #ccc;">Độ bám sát phác thảo (0 - 1):</label>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+             <input type="range" id="ai-strength" min="0" max="1" step="0.05" value="0.5" style="flex: 1;">
+             <span id="ai-strength-val" style="width: 30px; text-align: center;">0.5</span>
+          </div>
+
+          <button class="btn small call" id="ai-generate-btn" style="width: 100%; font-size: 1.1rem; padding: 10px; margin-top: 5px;">Vẽ ảnh bằng Stability AI</button>
+        </div>
+
         <div id="ai-terminal" style="background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; padding: 10px; height: 130px; overflow-y: auto; font-size: 12px; border: 1px solid #333; margin-top: 15px; border-radius: 4px; box-sizing: border-box;">
           &gt; Hệ thống AI đã sẵn sàng...<br>
         </div>
@@ -289,7 +302,7 @@
   <img src="assets/sky.jpg" id="pixelitimg_orig" alt="" style="display: none;">
   <script src="js/pixelit.min.js"></script>
   <script src="js/slim.select.min.js"></script>
-  <script src="js/main.min.js?v1"></script>
+  <script src="js/main.min.js?v2"></script>
   <!-- loader-->
   <div class="loader">
     <div class="lds-spinner">

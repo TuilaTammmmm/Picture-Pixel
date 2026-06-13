@@ -659,6 +659,7 @@ document.addEventListener("DOMContentLoaded", function () {
         toggleAIBtn.style.background = "#a83232";
         aiPanel.style.display = "block";
         aiOriginalContainer.style.display = "flex";
+        setTimeout(() => pixelit(), 50);
       } else {
         toggleAIBtn.innerText = "Bật Tính năng AI";
         toggleAIBtn.style.background = "#2b484b";
@@ -685,6 +686,70 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // --- GEMINI BRIDGE LOGIC ---
+  const copySketchBtn = document.getElementById("ai-copy-sketch-btn");
+  if (copySketchBtn) {
+    copySketchBtn.addEventListener("click", () => {
+      const origImg = document.getElementById("pixelitimg_orig");
+      if (!origImg || !origImg.src) return;
+      const tempCvs = document.createElement("canvas");
+      tempCvs.width = origImg.naturalWidth;
+      tempCvs.height = origImg.naturalHeight;
+      tempCvs.getContext("2d").drawImage(origImg, 0, 0);
+      tempCvs.toBlob(blob => {
+        if (!blob) return;
+        const item = new ClipboardItem({ "image/png": blob });
+        navigator.clipboard.write([item]).then(() => {
+          logTerminal("Đã copy ảnh phác thảo! Nhấn Ctrl+V để dán vào Gemini.", "#0aa");
+        }).catch(err => {
+          logTerminal("Lỗi copy ảnh: " + err, "#f00");
+        });
+      });
+    });
+  }
+
+  const copyPromptBtn = document.getElementById("ai-copy-prompt-btn");
+  if (copyPromptBtn) {
+    copyPromptBtn.addEventListener("click", () => {
+      const promptText = document.getElementById("ai-prompt").value.trim();
+      const fullPrompt = promptText ? `Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh hoàn chỉnh. Yêu cầu: ${promptText}. Vẽ theo phong cách pixel art tuyệt đẹp.` : "Hãy vẽ lại bản phác thảo đính kèm thành một bức ảnh pixel art hoàn chỉnh tuyệt đẹp.";
+      navigator.clipboard.writeText(fullPrompt).then(() => {
+        logTerminal("Đã copy Prompt. Đang mở tab Gemini...", "#0aa");
+        window.open("https://gemini.google.com/app", "_blank");
+      }).catch(err => {
+        logTerminal("Lỗi copy text: " + err, "#f00");
+      });
+    });
+  }
+
+  const pasteAIBtn = document.getElementById("ai-paste-result-btn");
+  if (pasteAIBtn) {
+    pasteAIBtn.addEventListener("click", async () => {
+      try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          const imageTypes = item.types.filter(type => type.startsWith('image/'));
+          if (imageTypes.length > 0) {
+            const blob = await item.getType(imageTypes[0]);
+            const img = new Image();
+            img.src = URL.createObjectURL(blob);
+            img.onload = () => {
+              px.setFromImgSource(img.src);
+              pixelit();
+              logTerminal("Đã dán và Pixel hóa kết quả từ Gemini thành công!", "#0f0");
+            };
+            return;
+          }
+        }
+        logTerminal("Lỗi: Không tìm thấy ảnh trong bộ nhớ tạm (Clipboard rỗng).", "#f00");
+      } catch (err) {
+        console.error(err);
+        logTerminal("Lỗi: Trình duyệt chặn đọc Clipboard. Hãy bôi đen Canvas dưới và ấn Ctrl+V thay thế.", "#f00");
+      }
+    });
+  }
+
+  // --- STABILITY AI LOGIC ---
   const generateAIBtn = document.getElementById("ai-generate-btn");
   const aiTerminal = document.getElementById("ai-terminal");
   
